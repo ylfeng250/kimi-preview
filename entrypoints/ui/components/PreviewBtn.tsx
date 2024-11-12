@@ -16,6 +16,7 @@ export default function PreviewBtn(props: PreviewBtnProps) {
   const [code, setCode] = useState("");
   const [fullScreen, setFullScreen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   const toggleFullScreen = () => {
     setFullScreen(!fullScreen);
@@ -34,6 +35,7 @@ export default function PreviewBtn(props: PreviewBtnProps) {
   };
 
   const downloadImage = () => {
+    setDownloadLoading(true);
     // 获取 iframe 内部的 document 对象
     let iframeDocument =
       iframeRef.current?.contentDocument ||
@@ -43,28 +45,49 @@ export default function PreviewBtn(props: PreviewBtnProps) {
     var firstChild = iframeDocument?.body.firstElementChild as HTMLElement;
 
     if (!firstChild) return;
-    // 创建一个新的 div 包裹目标元素并添加样式
-    const wrapper = document.createElement("div");
-    wrapper.style.padding = "8px";
-    wrapper.style.backgroundColor = "white"; // 卡片背景颜色
-    wrapper.style.borderRadius = "6px"; // 圆角
-    wrapper.style.display = "inline-block"; // 使内容自适应
-    wrapper.appendChild(firstChild.cloneNode(true)); // 克隆 SVG 内容
+    let targetNode = firstChild;
+    let needToClean = false;
+    // 判断第一个节点是否为 svg 元素
+    if (firstChild.tagName.toLowerCase() === "svg") {
+      needToClean = true;
+      // 创建一个新的 div 包裹目标元素并添加样式
 
-    document.body.appendChild(wrapper); // 将 wrapper 添加到 DOM 中
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "8px";
+      wrapper.style.backgroundColor = "white"; // 卡片背景颜色
+      wrapper.style.borderRadius = "6px"; // 圆角
+      wrapper.style.display = "inline-block"; // 使内容自适应
+      wrapper.appendChild(firstChild.cloneNode(true)); // 克隆 SVG 内容
 
-    html2canvas(wrapper, {
-      backgroundColor: null, // 透明背景
-      useCORS: true,
-      scale: 2, // 提升画质
-    }).then((canvas) => {
-      const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = `${new Date().toLocaleDateString()}.png`;
-      link.click();
+      document.body.appendChild(wrapper); // 将 wrapper 添加到 DOM 中
 
-      document.body.removeChild(wrapper); // 下载后移除 wrapper
-    });
+      targetNode = wrapper;
+    } else {
+      // 如果不是 svg 的时候其实需要获取完整的 body
+      targetNode = iframeDocument?.body as HTMLElement;
+    }
+
+    setTimeout(() => {
+      html2canvas(targetNode, {
+        backgroundColor: null, // 透明背景
+        useCORS: true,
+        scale: 2, // 提升画质
+      })
+        .then((canvas) => {
+          const link = document.createElement("a");
+          link.href = canvas.toDataURL("image/png");
+          link.download = `${new Date().toLocaleDateString()}.png`;
+          link.click();
+
+          if (needToClean) {
+            document.body.removeChild(targetNode); // 下载后移除 wrapper
+          }
+          setDownloadLoading(false);
+        })
+        .finally(() => {
+          setDownloadLoading(false);
+        });
+    }, 100);
   };
   return (
     <>
@@ -94,7 +117,11 @@ export default function PreviewBtn(props: PreviewBtnProps) {
                 fullScreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />
               }
             ></Button>
-            <Button icon={<DownloadOutlined />} onClick={downloadImage}>
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={downloadImage}
+              loading={downloadLoading}
+            >
               下载为图片
             </Button>
           </Space>

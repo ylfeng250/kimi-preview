@@ -1,36 +1,55 @@
+import { Button, Switch } from "antd";
 import { addPreviewBtn } from "../lib/addPreviewBtn";
 
+const callback = (mutationsList: MutationRecord[]) => {
+  for (const mutation of mutationsList) {
+    if (mutation.type === "childList") {
+      mutation.addedNodes.forEach((node) => {
+        if (
+          "matches" in node &&
+          // @ts-ignore
+          node.matches("pre")
+        ) {
+          setTimeout(() => {
+            addPreviewBtn();
+          }, 500);
+        }
+      });
+    }
+  }
+};
 export default function Preview() {
-  useEffect(() => {
+  const observerRef = useRef(new MutationObserver(callback));
+  function init() {
     const targetNode = document.getElementById("scroll-list");
     const config = { childList: true, subtree: true };
-    if (!targetNode) return;
-
-    const callback = (mutationsList: MutationRecord[]) => {
-      for (const mutation of mutationsList) {
-        if (mutation.type === "childList") {
-          mutation.addedNodes.forEach((node) => {
-            if (
-              "matches" in node &&
-              // @ts-ignore
-              node.matches("pre")
-            ) {
-              setTimeout(() => {
-                addPreviewBtn();
-                console.log("handleScrollList");
-              }, 500);
-            }
-          });
-        }
-      }
-    };
-    const observer = new MutationObserver(callback);
+    if (!targetNode) return () => {};
 
     if (targetNode) {
       addPreviewBtn();
-      observer.observe(targetNode, config);
+      observerRef.current.observe(targetNode, config);
     }
-    return () => observer.disconnect();
+    return () => observerRef.current.disconnect();
+  }
+  useEffect(() => {
+    const clean = init();
+    return () => clean();
   }, []);
-  return null;
+  return (
+    <Button
+      type="primary"
+      size="small"
+      style={{
+        position: "fixed",
+        zIndex: 200,
+        right: "50px",
+        top: "16px",
+      }}
+      onClick={() => {
+        init();
+      }}
+    >
+      触发预览
+    </Button>
+  );
 }
