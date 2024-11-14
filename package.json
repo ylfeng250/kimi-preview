@@ -1,8 +1,8 @@
 {
   "name": "kimi-preview",
-  "description": "manifest.json description",
+  "description": "kimi-preview 是一个代码预览助手,能够在https://kimi.moonshot.cn网页中对生成的 HTML 代码块或者 SVG 代码块 提供便捷的预览功能。",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "scripts": {
     "dev": "wxt",
