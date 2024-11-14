@@ -7,7 +7,13 @@ export function addPreviewBtn() {
     document.querySelectorAll("pre.language-html");
   const xmlLanguageElements: NodeListOf<HTMLElement> =
     document.querySelectorAll("pre.language-xml");
-  const elements = [...htmlLanguagelEments, ...xmlLanguageElements];
+  const svgLanguageElements: NodeListOf<HTMLElement> =
+    document.querySelectorAll("pre.language-svg");
+  const elements = [
+    ...htmlLanguagelEments,
+    ...xmlLanguageElements,
+    ...svgLanguageElements,
+  ];
   elements.forEach((element) => {
     if (element.querySelector(`.${KIMI_PREVIEW_BTN}`)) {
       return;
