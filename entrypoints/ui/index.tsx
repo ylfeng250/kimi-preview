@@ -4,7 +4,7 @@ import { CUSTOM_TAG_NAME } from "@/constant";
 import Preview from "./components/preview";
 
 export function getChatSegments() {
-  return document.querySelector("#k-chat-segments") as HTMLElement;
+  return document.querySelector(".chat-content-list") as HTMLElement;
 }
 
 export function getFirstPreDom() {

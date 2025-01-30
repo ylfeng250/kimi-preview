@@ -21,7 +21,7 @@ const callback = (mutationsList: MutationRecord[]) => {
 export default function Preview() {
   const observerRef = useRef(new MutationObserver(callback));
   function init() {
-    const targetNode = document.getElementById("scroll-list");
+    const targetNode = document.querySelector(".chat-content-list");
     const config = { childList: true, subtree: true };
     if (!targetNode) return () => {};
 

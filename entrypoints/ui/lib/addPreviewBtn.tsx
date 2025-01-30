@@ -19,16 +19,41 @@ export function addPreviewBtn() {
       return;
     }
 
-    element.style.position = "relative";
+    // 查找兄弟节点中的 header 节点
+    let sibling = element?.parentElement?.previousElementSibling;
 
-    const div = document.createElement("div");
-    div.style.position = "absolute";
-    div.style.right = "5px";
-    div.style.top = "5px";
+    while (sibling) {
+      if (sibling.tagName.toLowerCase() === "header") {
+        console.log("找到 header 节点:", sibling);
+        break;
+      }
+      sibling = sibling.previousElementSibling;
+    }
 
-    element.appendChild(div);
+    if (!sibling) {
+      sibling = element?.parentElement?.nextElementSibling;
+      while (sibling) {
+        if (sibling.tagName.toLowerCase() === "header") {
+          console.log("找到 header 节点:", sibling);
+          break;
+        }
+        sibling = sibling.nextElementSibling;
+      }
+    }
 
-    const root = createRoot(div);
-    root.render(<PreviewBtn preDom={element} />);
+    if (!sibling) {
+      console.log("未找到 header 节点");
+    } else {
+      (sibling as HTMLHeadElement).style.position = "relative";
+      const div = document.createElement("div");
+      div.style.position = "absolute";
+      div.style.right = "50px";
+      div.style.top = "6px";
+
+      sibling.appendChild(div);
+
+      const root = createRoot(div);
+      root.render(<PreviewBtn preDom={element} />);
+    }
   });
 }
